@@ -1,5 +1,6 @@
 import json
-from flask import Flask, render_template, send_from_directory, jsonify
+import os
+from flask import Flask, render_template, send_from_directory, request
 from flask_bootstrap import Bootstrap
 from ScootLocations import ScootLocations
 
@@ -12,11 +13,27 @@ def index():
     return render_template('index.html')
 
 @app.route('/api/scooters')
-def scooters():
-    scoot_locations = ScootLocations('downloads/2016-02-19_01:40:07.json')
+def current_scooters():
+    scoot_location_files = [f for f in os.listdir('downloads') if os.path.isfile(os.path.join('downloads', f))]
+    scoot_location_files = sorted(scoot_location_files)
+
+    file_index = len(scoot_location_files) - 1
+    scoot_locations = ScootLocations(scoot_location_files[file_index])
     scooter_list = scoot_locations.get_scooters()
     scooter_json = json.dumps(scooter_list)
     return scooter_json
+
+@app.route('/api/scooters/<int:file_index>')
+def scooters(file_index=0):
+    scoot_location_files = [f for f in os.listdir('downloads') if os.path.isfile(os.path.join('downloads', f))]
+    scoot_location_files = sorted(scoot_location_files)
+    file_index = int(file_index)
+    scoot_locations = ScootLocations(scoot_location_files[file_index])
+    scooter_list = scoot_locations.get_scooters()
+    scooter_json = json.dumps(scooter_list)
+    return scooter_json
+
+
 
 @app.route('/static/js/<path:path>')
 def send_js(path):

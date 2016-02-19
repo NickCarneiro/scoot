@@ -10,7 +10,7 @@ class ScootLocations:
             self.parse(json_file)
 
     def parse(self, json_file):
-        json_file_path = os.path.join(os.path.dirname(__file__), json_file)
+        json_file_path = os.path.join(os.path.dirname(__file__), 'downloads', json_file)
         f = open(json_file_path)
         scoot_locations_json = f.read()
         f.close()
@@ -19,6 +19,7 @@ class ScootLocations:
         self.report_timestamp = scoot_locations['asof']
 
     def get_scooters(self):
-        return self.scooters
+        response = {'scooters': self.scooters, 'timestamp': self.report_timestamp}
+        return response
 
 

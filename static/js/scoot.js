@@ -2,6 +2,9 @@ var mapElem = document.getElementById('map');
 var windowHeight = window.innerHeight - 60;
 mapElem.style.height = windowHeight + 'px';
 var map;
+var timeIndex = 0;
+var markers = [];
+
 function initMap() {
     console.log('initializing map');
     map = new google.maps.Map(mapElem, {
@@ -9,25 +12,38 @@ function initMap() {
         zoom: 14
     });
 
+
+    getScooters(timeIndex)
+}
+
+function getScooters(timeIndex) {
     var request = new XMLHttpRequest();
-    request.open('GET', '/api/scooters', true);
+    var url = '/api/scooters/' + timeIndex;
+    request.open('GET', url, true);
 
     request.onload = function() {
         if (request.status >= 200 && request.status < 400) {
             // Success!
             var resp = request.responseText;
-            var scooters = JSON.parse(resp);
+            var response = JSON.parse(resp);
+            var scooters = response.scooters;
+            var timestamp = response.timestamp;
+            var localTime = new Date(timestamp * 1000);
+            var timestampLabel = document.getElementById('timestamp');
+            timestampLabel.innerHTML = localTime;
+            clearMarkers(markers);
             scooters.forEach(function(scooter) {
                 var location = {lat: parseFloat(scooter.latitude), lng: parseFloat(scooter.longitude)};
-                new google.maps.Marker({
+                var marker = new google.maps.Marker({
                     position: location,
                     map: map,
                     title: String(scooter.physical_scoot_id)
                 });
+                markers.push(marker);
             });
         } else {
             // We reached our target server, but it returned an error
-           console.log('error fetching scooters')
+            console.log('error fetching scooters')
         }
     };
 
@@ -37,8 +53,26 @@ function initMap() {
     };
 
     request.send();
+}
 
+var nextButton = document.getElementById('next');
+nextButton.addEventListener('click', function() {
+    console.log('loading next time');
+    timeIndex++;
+    getScooters(timeIndex);
+});
 
+var prevButton = document.getElementById('previous');
+prevButton.addEventListener('click', function() {
+    timeIndex--;
+    getScooters(timeIndex);
+});
+
+function clearMarkers() {
+    markers.forEach(function(marker){
+        marker.setMap(null);
+    });
+    markers = [];
 }
 
 

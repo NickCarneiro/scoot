@@ -7,23 +7,27 @@
 {% block title %}Scoot Locations{% endblock %}
 
 {% block navbar %}
-<div class="navbar navbar-fixed-top">
-    <!-- ... -->
-</div>
+
 {% endblock %}
 
 {% block content %}
-<h1>Scoot Locations</h1>
-  <div id="map">
-
-  </div>
-  {% for scooter in scooters %}
-    <div>
-    {{ scooter.id }}
-    {{ scooter.latitude }}
-        {{ scooter.longitude }}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-12">
+      <button class="btn btn-primary" id="previous">Previous</button>
+      <button class="btn btn-primary" id="next">Next</button>
+      <span id="timestamp"></span>
     </div>
-  {% endfor %}
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <div id="map">
+
+      </div>
+    </div>
+  </div>
+</div>
   <script src="{{url_for('.static', filename='js/scoot.js')}}"></script>
 
   <script async defer
