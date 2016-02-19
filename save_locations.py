@@ -1,6 +1,13 @@
 import time
 import datetime
 import requests
+import rollbar
+import os
+
+environment = os.environ.get('ENVIRONMENT')
+if not environment:
+    environment = 'development'
+rollbar.init(os.environ['ROLLBAR_TOKEN'], environment)  # access_token, environment
 
 scoot_location_url = 'https://app.scootnetworks.com/api/v1/scooters.json?locations_updated_since=null'
 now_unix_timestamp = int(time.time())
@@ -15,5 +22,6 @@ try:
     json_file.close()
 except Exception as e:
     print e
+    rollbar.report_exc_info()
 
 
