@@ -1,0 +1,17 @@
+{% extends "bootstrap/base.html" %}
+{% block scripts %}
+<script src="{{url_for('.static', filename='js/scoot.js')}}"></script>
+{{super()}}
+{% endblock %}
+
+{% block title %}This is an example page{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-fixed-top">
+    <!-- ... -->
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Hello, Bootstrap</h1>
+{% endblock %}
