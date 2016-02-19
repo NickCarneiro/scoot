@@ -5,7 +5,16 @@ from flask_bootstrap import Bootstrap
 from ScootLocations import ScootLocations
 
 app = Flask(__name__)
-app.debug = True
+environment = os.environ.get('ENVIRONMENT')
+if not environment:
+    environment = 'development'
+if environment == 'development':
+    app.debug = True
+if environment == 'production':
+    port = 9001
+else:
+    port = 5000
+
 Bootstrap(app)
 
 @app.route("/")
@@ -44,4 +53,4 @@ def send_css(path):
     return send_from_directory('static/css', path)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=port)
