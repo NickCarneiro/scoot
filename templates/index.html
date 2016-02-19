@@ -1,6 +1,6 @@
 {% extends "bootstrap/base.html" %}
 {% block scripts %}
-<script src="{{url_for('.static', filename='js/scoot.js')}}"></script>
+
 {{super()}}
 {% endblock %}
 
@@ -14,6 +14,9 @@
 
 {% block content %}
 <h1>Scoot Locations</h1>
+  <div id="map">
+
+  </div>
   {% for scooter in scooters %}
     <div>
     {{ scooter.id }}
@@ -21,4 +24,10 @@
         {{ scooter.longitude }}
     </div>
   {% endfor %}
+  <script src="{{url_for('.static', filename='js/scoot.js')}}"></script>
+
+  <script async defer
+          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCvdIELfqzn3SzzvnOKmyt1G1lwazG8Dj8&callback=initMap">
+  </script>
+  <link rel="stylesheet" href="{{url_for('.static', filename='css/style.css')}}" />
 {% endblock %}
