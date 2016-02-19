@@ -30,7 +30,14 @@ function getScooters(timeIndex) {
             var timestamp = response.timestamp;
             var localTime = new Date(timestamp * 1000);
             var timestampLabel = document.getElementById('timestamp');
-            timestampLabel.innerHTML = localTime;
+            var prettyDate = moment(localTime).format('MMMM Do YYYY, h:mm:ss a');
+            timestampLabel.innerHTML = prettyDate;
+            var chargeLabel = document.getElementById('charge');
+            var averageCharge = getAverageCharge(scooters);
+            chargeLabel.innerHTML = averageCharge.toFixed(2) + '%';
+            var availableLabel = document.getElementById('available');
+            availableLabel.innerHTML = scooters.length;
+
             clearMarkers(markers);
             scooters.forEach(function(scooter) {
                 var location = {lat: parseFloat(scooter.latitude), lng: parseFloat(scooter.longitude)};
@@ -73,6 +80,14 @@ function clearMarkers() {
         marker.setMap(null);
     });
     markers = [];
+}
+
+function getAverageCharge(scooters) {
+    var totalCharge = 0;
+    scooters.forEach(function(scooter) {
+        totalCharge += parseFloat(scooter.batt_pct_smoothed);
+    });
+    return totalCharge / scooters.length;
 }
 
 

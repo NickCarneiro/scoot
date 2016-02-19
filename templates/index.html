@@ -17,6 +17,8 @@
       <button class="btn btn-primary" id="previous">Previous</button>
       <button class="btn btn-primary" id="next">Next</button>
       <span id="timestamp"></span>
+      Average charge: <span id="charge"></span>
+      Scooters available: <span id="available"></span>
     </div>
   </div>
 
@@ -28,6 +30,7 @@
     </div>
   </div>
 </div>
+  <script src="{{url_for('.static', filename='js/moment.js')}}"></script>
   <script src="{{url_for('.static', filename='js/scoot.js')}}"></script>
 
   <script async defer
