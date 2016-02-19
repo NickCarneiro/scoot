@@ -4,7 +4,7 @@
 {{super()}}
 {% endblock %}
 
-{% block title %}This is an example page{% endblock %}
+{% block title %}Scoot Locations{% endblock %}
 
 {% block navbar %}
 <div class="navbar navbar-fixed-top">
@@ -13,5 +13,12 @@
 {% endblock %}
 
 {% block content %}
-<h1>Hello, Bootstrap</h1>
+<h1>Scoot Locations</h1>
+  {% for scooter in scooters %}
+    <div>
+    {{ scooter.id }}
+    {{ scooter.latitude }}
+        {{ scooter.longitude }}
+    </div>
+  {% endfor %}
 {% endblock %}
