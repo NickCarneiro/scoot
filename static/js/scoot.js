@@ -36,7 +36,14 @@ function getScooters(timeIndex) {
             var averageCharge = getAverageCharge(scooters);
             chargeLabel.innerHTML = averageCharge.toFixed(2) + '%';
             var availableLabel = document.getElementById('available');
-            availableLabel.innerHTML = scooters.length;
+            var scootsAvailable = scooters.length;
+            availableLabel.innerHTML = scootsAvailable;
+            var scootilizationPercentage = getScootilizationPercentage(scootsAvailable);
+            var scootilizationLabel = document.getElementById('scootilization');
+            scootilizationLabel.innerHTML = scootilizationPercentage.toFixed(2) + '%';
+
+
+            getHighestScootNumber(scooters);
 
             clearMarkers(markers);
             scooters.forEach(function(scooter) {
@@ -88,6 +95,22 @@ function getAverageCharge(scooters) {
         totalCharge += parseFloat(scooter.batt_pct_smoothed);
     });
     return totalCharge / scooters.length;
+}
+
+function getHighestScootNumber(scooters) {
+    var highestScootNumber = 0;
+    scooters.forEach(function(scooter) {
+        console.log(scooter.physical_scoot_id);
+        if (scooter.physical_scoot_id > highestScootNumber) {
+            highestScootNumber = scooter.physical_scoot_id;
+        }
+    });
+    console.log('highest scoot: ' + highestScootNumber);
+}
+
+function getScootilizationPercentage(availableScootCount) {
+    // FAQ says 400 scoots total
+    return (400 - availableScootCount) / 400 * 100;
 }
 
 
