@@ -21,17 +21,6 @@ Bootstrap(app)
 def index():
     return render_template('index.html')
 
-@app.route('/api/scooters')
-def current_scooters():
-    scoot_location_files = [f for f in os.listdir('downloads') if os.path.isfile(os.path.join('downloads', f))]
-    scoot_location_files = sorted(scoot_location_files)
-
-    file_index = len(scoot_location_files) - 1
-    scoot_locations = ScootLocations(scoot_location_files[file_index])
-    scooter_list = scoot_locations.get_scooters()
-    scooter_json = json.dumps(scooter_list)
-    return scooter_json
-
 @app.route('/api/scooters/<int:file_index>')
 def scooters(file_index=0):
     scoot_location_files = [f for f in os.listdir('downloads') if os.path.isfile(os.path.join('downloads', f))]
@@ -39,6 +28,7 @@ def scooters(file_index=0):
     file_index = int(file_index)
     scoot_locations = ScootLocations(scoot_location_files[file_index])
     scooter_list = scoot_locations.get_scooters()
+    scooter_list['lastTimeIndex'] = len(scoot_location_files) - 1
     scooter_json = json.dumps(scooter_list)
     return scooter_json
 

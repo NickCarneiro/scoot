@@ -15,8 +15,32 @@
   <div class="row">
     <div class="col-sm-12">
       <ul class="list-inline">
-        <li><button class="btn btn-primary" id="previous">Previous</button></li>
-        <li><button class="btn btn-primary" id="next">Next</button></li>
+        <li>
+          <button class="btn btn-primary" id="beginning">
+          <span class="glyphicon glyphicon-fast-backward" aria-hidden="true"></span> Beginning
+          </button>
+        </li>
+        <li><button class="btn btn-primary" id="previous">
+          <span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span>Previous</button></li>
+        <li>
+          <button type="button" class="btn btn-primary" id="play">
+          <span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play
+          </button>
+        </li>
+        <li>
+          <button type="button" class="btn btn-primary" id="pause">
+            <span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause
+          </button>
+        </li>
+        <li><button type="button" class="btn btn-primary" id="next">
+          <span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span> Next
+        </button>
+        </li>
+        <li>
+          <button class="btn btn-primary" id="end">
+            <span class="glyphicon glyphicon-fast-forward" aria-hidden="true"></span> End
+          </button>
+        </li>
       <li id="timestamp"></li>
         <li>Average charge: <span id="charge"></span></li>
         <li>Scooters available: <span id="available"></span></li>

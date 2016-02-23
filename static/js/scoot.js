@@ -3,6 +3,7 @@ var windowHeight = window.innerHeight - 60;
 mapElem.style.height = windowHeight + 'px';
 var map;
 var timeIndex = 0;
+var lastTimeIndex = 0;
 var markers = [];
 
 function initMap() {
@@ -26,6 +27,7 @@ function getScooters(timeIndex) {
             // Success!
             var resp = request.responseText;
             var response = JSON.parse(resp);
+            lastTimeIndex = response.lastTimeIndex;
             var scooters = response.scooters;
             var timestamp = response.timestamp;
             var localTime = new Date(timestamp * 1000);
@@ -51,7 +53,11 @@ function getScooters(timeIndex) {
                 var marker = new google.maps.Marker({
                     position: location,
                     map: map,
-                    title: String(scooter.physical_scoot_id)
+                    title: String(scooter.physical_scoot_id),
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 3
+                    }
                 });
                 markers.push(marker);
             });
@@ -82,6 +88,43 @@ prevButton.addEventListener('click', function() {
     getScooters(timeIndex);
 });
 
+var endButton = document.getElementById('end');
+endButton.addEventListener('click', function() {
+    timeIndex = lastTimeIndex;
+    getScooters(timeIndex);
+});
+
+var beginningButton = document.getElementById('beginning');
+beginningButton.addEventListener('click', function() {
+    timeIndex = 0;
+    getScooters(timeIndex);
+});
+
+var interval;
+var playButton = document.getElementById('play');
+playButton.addEventListener('click', function() {
+    interval = setInterval(function() {
+        if (timeIndex === lastTimeIndex) {
+            clearInterval(interval);
+        }
+        getScooters(timeIndex);
+        timeIndex++;
+    }, 1000);
+});
+
+var pauseButton = document.getElementById('pause');
+pauseButton.addEventListener('click', function() {
+    if (interval) {
+        clearInterval(interval);
+    }
+});
+
+
+beginningButton.addEventListener('click', function() {
+    timeIndex = 0;
+    getScooters(timeIndex);
+});
+
 function clearMarkers() {
     markers.forEach(function(marker){
         marker.setMap(null);
@@ -100,7 +143,6 @@ function getAverageCharge(scooters) {
 function getHighestScootNumber(scooters) {
     var highestScootNumber = 0;
     scooters.forEach(function(scooter) {
-        console.log(scooter.physical_scoot_id);
         if (scooter.physical_scoot_id > highestScootNumber) {
             highestScootNumber = scooter.physical_scoot_id;
         }
