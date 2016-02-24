@@ -4,7 +4,7 @@ mapElem.style.height = windowHeight + 'px';
 var map;
 var timeIndex = 0;
 var lastTimeIndex = 0;
-var markers = [];
+var scooters = {};
 
 function initMap() {
     console.log('initializing map');
@@ -28,39 +28,24 @@ function getScooters(timeIndex) {
             var resp = request.responseText;
             var response = JSON.parse(resp);
             lastTimeIndex = response.lastTimeIndex;
-            var scooters = response.scooters;
+            var serverScooters = response.scooters;
             var timestamp = response.timestamp;
             var localTime = new Date(timestamp * 1000);
             var timestampLabel = document.getElementById('timestamp');
             var prettyDate = moment(localTime).format('MMMM Do YYYY, h:mm:ss a');
             timestampLabel.innerHTML = prettyDate;
             var chargeLabel = document.getElementById('charge');
-            var averageCharge = getAverageCharge(scooters);
+            var averageCharge = getAverageCharge(serverScooters);
             chargeLabel.innerHTML = averageCharge.toFixed(2) + '%';
             var availableLabel = document.getElementById('available');
-            var scootsAvailable = scooters.length;
+            var scootsAvailable = serverScooters.length;
             availableLabel.innerHTML = scootsAvailable;
             var scootilizationPercentage = getScootilizationPercentage(scootsAvailable);
             var scootilizationLabel = document.getElementById('scootilization');
             scootilizationLabel.innerHTML = scootilizationPercentage.toFixed(2) + '%';
+            getHighestScootNumber(serverScooters);
+            updateScooters(serverScooters);
 
-
-            getHighestScootNumber(scooters);
-
-            clearMarkers(markers);
-            scooters.forEach(function(scooter) {
-                var location = {lat: parseFloat(scooter.latitude), lng: parseFloat(scooter.longitude)};
-                var marker = new google.maps.Marker({
-                    position: location,
-                    map: map,
-                    title: String(scooter.physical_scoot_id),
-                    icon: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: 3
-                    }
-                });
-                markers.push(marker);
-            });
         } else {
             // We reached our target server, but it returned an error
             console.log('error fetching scooters')
@@ -90,6 +75,9 @@ prevButton.addEventListener('click', function() {
 
 var endButton = document.getElementById('end');
 endButton.addEventListener('click', function() {
+    if (interval) {
+        clearInterval(interval);
+    }
     timeIndex = lastTimeIndex;
     getScooters(timeIndex);
 });
@@ -109,7 +97,7 @@ playButton.addEventListener('click', function() {
         }
         getScooters(timeIndex);
         timeIndex++;
-    }, 1000);
+    }, 200);
 });
 
 var pauseButton = document.getElementById('pause');
@@ -121,15 +109,36 @@ pauseButton.addEventListener('click', function() {
 
 
 beginningButton.addEventListener('click', function() {
+    if (interval) {
+        clearInterval(interval);
+    }
     timeIndex = 0;
     getScooters(timeIndex);
 });
 
-function clearMarkers() {
-    markers.forEach(function(marker){
-        marker.setMap(null);
+function updateScooters(serverScooters) {
+    serverScooters.forEach(function(scooter) {
+        // if scooter exists, update its marker
+        if (scooters[scooter.physical_scoot_id]) {
+            var marker = scooters[scooter.physical_scoot_id].marker;
+            var location = {lat: parseFloat(scooter.latitude), lng: parseFloat(scooter.longitude)};
+            marker.setPosition(location)
+        } else {
+            // if we haven't seen this scooter before, create a marker for it.
+            var location = {lat: parseFloat(scooter.latitude), lng: parseFloat(scooter.longitude)};
+            var marker = new google.maps.Marker({
+                position: location,
+                map: map,
+                title: String(scooter.physical_scoot_id),
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 3
+                }
+            });
+            scooter['marker'] = marker;
+            scooters[scooter.physical_scoot_id] = scooter;
+        }
     });
-    markers = [];
 }
 
 function getAverageCharge(scooters) {
