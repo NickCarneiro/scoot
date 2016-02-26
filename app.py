@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template, send_from_directory, request
 from flask_bootstrap import Bootstrap
 from ScootLocations import ScootLocations
+from process_data import process_scoot_data
 
 app = Flask(__name__)
 environment = os.environ.get('ENVIRONMENT')
@@ -21,15 +22,18 @@ Bootstrap(app)
 def index():
     return render_template('index.html')
 
-@app.route('/api/scooters/<int:file_index>')
-def scooters(file_index=0):
-    scoot_location_files = [f for f in os.listdir('downloads') if os.path.isfile(os.path.join('downloads', f))]
-    scoot_location_files = sorted(scoot_location_files)
-    file_index = int(file_index)
-    scoot_locations = ScootLocations(scoot_location_files[file_index])
-    scooter_list = scoot_locations.get_scooters()
-    scooter_list['lastTimeIndex'] = len(scoot_location_files) - 1
-    scooter_json = json.dumps(scooter_list)
+@app.route('/api/scooters')
+def scooters():
+    scoot_data_path = 'scoot_data.json'
+    if not os.path.isfile(scoot_data_path):
+        scoot_data = process_scoot_data()
+        scoot_data_json = json.dumps(scoot_data)
+        f = open(scoot_data_path, 'w')
+        f.write(scoot_data_json)
+        f.close()
+    f = open(scoot_data_path)
+    scooter_json = f.read()
+    f.close()
     return scooter_json
 
 

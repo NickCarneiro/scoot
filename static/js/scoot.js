@@ -3,8 +3,10 @@ var windowHeight = window.innerHeight - 60;
 mapElem.style.height = windowHeight + 'px';
 var map;
 var timeIndex = 0;
-var lastTimeIndex = 0;
+// persistent map of scooters
 var scooters = {};
+// holds all the data precomputed on the server
+var timeSeriesData;
 
 function initMap() {
     console.log('initializing map');
@@ -12,14 +14,12 @@ function initMap() {
         center: {lat: 37.765266, lng: -122.443355},
         zoom: 14
     });
-
-
     getScooters(timeIndex)
 }
 
 function getScooters(timeIndex) {
     var request = new XMLHttpRequest();
-    var url = '/api/scooters/' + timeIndex;
+    var url = '/api/scooters';
     request.open('GET', url, true);
 
     request.onload = function() {
@@ -27,28 +27,12 @@ function getScooters(timeIndex) {
             // Success!
             var resp = request.responseText;
             var response = JSON.parse(resp);
-            lastTimeIndex = response.lastTimeIndex;
-            var serverScooters = response.scooters;
-            var timestamp = response.timestamp;
-            var localTime = new Date(timestamp * 1000);
-            var timestampLabel = document.getElementById('timestamp');
-            var prettyDate = moment(localTime).format('MMMM Do YYYY, h:mm:ss a');
-            timestampLabel.innerHTML = prettyDate;
-            var chargeLabel = document.getElementById('charge');
-            var averageCharge = getAverageCharge(serverScooters);
-            chargeLabel.innerHTML = averageCharge.toFixed(2) + '%';
-            var availableLabel = document.getElementById('available');
-            var scootsAvailable = serverScooters.length;
-            availableLabel.innerHTML = scootsAvailable;
-            var scootilizationPercentage = getScootilizationPercentage(scootsAvailable);
-            var scootilizationLabel = document.getElementById('scootilization');
-            scootilizationLabel.innerHTML = scootilizationPercentage.toFixed(2) + '%';
-            getHighestScootNumber(serverScooters);
-            updateScooters(serverScooters);
+            timeSeriesData = response;
+            renderSnapshot(timeIndex);
 
         } else {
             // We reached our target server, but it returned an error
-            console.log('error fetching scooters')
+            console.log('error fetching scooter data')
         }
     };
 
@@ -60,17 +44,36 @@ function getScooters(timeIndex) {
     request.send();
 }
 
+function renderSnapshot(timeIndex) {
+    var serverScooters = timeSeriesData[timeIndex]['scooters'];
+    var timestamp = timeSeriesData[timeIndex]['timestamp'];
+    var localTime = new Date(timestamp * 1000);
+    var timestampLabel = document.getElementById('timestamp');
+    var prettyDate = moment(localTime).format('MMMM Do YYYY, h:mm:ss a');
+    timestampLabel.innerHTML = prettyDate;
+    var chargeLabel = document.getElementById('charge');
+    var averageCharge = timeSeriesData[timeIndex]['average_charge_percentage'];
+    chargeLabel.innerHTML = averageCharge.toFixed(2) + '%';
+    var availableLabel = document.getElementById('available');
+    var scootsAvailable = timeSeriesData[timeIndex]['total_scooters_available'];
+    availableLabel.innerHTML = scootsAvailable;
+    var scootilizationPercentage = timeSeriesData[timeIndex]['scootilization_percentage'];
+    var scootilizationLabel = document.getElementById('scootilization');
+    scootilizationLabel.innerHTML = scootilizationPercentage.toFixed(2) + '%';
+    updateScooters(serverScooters);
+}
+
 var nextButton = document.getElementById('next');
 nextButton.addEventListener('click', function() {
     console.log('loading next time');
     timeIndex++;
-    getScooters(timeIndex);
+    renderSnapshot(timeIndex);
 });
 
 var prevButton = document.getElementById('previous');
 prevButton.addEventListener('click', function() {
     timeIndex--;
-    getScooters(timeIndex);
+    renderSnapshot(timeIndex);
 });
 
 var endButton = document.getElementById('end');
@@ -78,24 +81,27 @@ endButton.addEventListener('click', function() {
     if (interval) {
         clearInterval(interval);
     }
-    timeIndex = lastTimeIndex;
-    getScooters(timeIndex);
+    timeIndex = timeSeriesData.length - 1;
+    renderSnapshot(timeIndex);
 });
 
 var beginningButton = document.getElementById('beginning');
 beginningButton.addEventListener('click', function() {
+    if (interval) {
+        clearInterval(interval);
+    }
     timeIndex = 0;
-    getScooters(timeIndex);
+    renderSnapshot(timeIndex);
 });
 
 var interval;
 var playButton = document.getElementById('play');
 playButton.addEventListener('click', function() {
     interval = setInterval(function() {
-        if (timeIndex === lastTimeIndex) {
+        if (timeIndex >= timeSeriesData.length - 1) {
             clearInterval(interval);
         }
-        getScooters(timeIndex);
+        renderSnapshot(timeIndex);
         timeIndex++;
     }, 200);
 });
@@ -108,19 +114,13 @@ pauseButton.addEventListener('click', function() {
 });
 
 
-beginningButton.addEventListener('click', function() {
-    if (interval) {
-        clearInterval(interval);
-    }
-    timeIndex = 0;
-    getScooters(timeIndex);
-});
 
 function updateScooters(serverScooters) {
-    serverScooters.forEach(function(scooter) {
+    for (var scooterId in serverScooters) {
+        var scooter = serverScooters[scooterId];
         // if scooter exists, update its marker
-        if (scooters[scooter.physical_scoot_id]) {
-            var marker = scooters[scooter.physical_scoot_id].marker;
+        if (scooters[scooterId]) {
+            var marker = scooters[scooterId].marker;
             var location = {lat: parseFloat(scooter.latitude), lng: parseFloat(scooter.longitude)};
             marker.setPosition(location)
         } else {
@@ -129,40 +129,18 @@ function updateScooters(serverScooters) {
             var marker = new google.maps.Marker({
                 position: location,
                 map: map,
-                title: String(scooter.physical_scoot_id),
+                title: String(scooterId),
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
                     scale: 3
                 }
             });
             scooter['marker'] = marker;
-            scooters[scooter.physical_scoot_id] = scooter;
+            scooters[scooterId] = scooter;
         }
-    });
+    }
 }
 
-function getAverageCharge(scooters) {
-    var totalCharge = 0;
-    scooters.forEach(function(scooter) {
-        totalCharge += parseFloat(scooter.batt_pct_smoothed);
-    });
-    return totalCharge / scooters.length;
-}
-
-function getHighestScootNumber(scooters) {
-    var highestScootNumber = 0;
-    scooters.forEach(function(scooter) {
-        if (scooter.physical_scoot_id > highestScootNumber) {
-            highestScootNumber = scooter.physical_scoot_id;
-        }
-    });
-    console.log('highest scoot: ' + highestScootNumber);
-}
-
-function getScootilizationPercentage(availableScootCount) {
-    // FAQ says 400 scoots total
-    return (400 - availableScootCount) / 400 * 100;
-}
 
 
 
