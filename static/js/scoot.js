@@ -49,7 +49,7 @@ function renderSnapshot(timeIndex) {
     var timestamp = timeSeriesData[timeIndex]['timestamp'];
     var localTime = new Date(timestamp * 1000);
     var timestampLabel = document.getElementById('timestamp');
-    var prettyDate = moment(localTime).format('MMMM Do YYYY, h:mm:ss a');
+    var prettyDate = moment(localTime).format('dddd, MMMM Do YYYY, h:mm:ss a');
     timestampLabel.innerHTML = prettyDate;
     var chargeLabel = document.getElementById('charge');
     var averageCharge = timeSeriesData[timeIndex]['average_charge_percentage'];
@@ -103,7 +103,7 @@ playButton.addEventListener('click', function() {
         }
         renderSnapshot(timeIndex);
         timeIndex++;
-    }, 200);
+    }, 100);
 });
 
 var pauseButton = document.getElementById('pause');
