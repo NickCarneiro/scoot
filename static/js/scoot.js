@@ -157,33 +157,36 @@ function drawCharts() {
 
 function drawChargeChart() {
     var chargeData = buildChargeChartData(timeSeriesData);
-    var containerWidth = document.getElementById('charge-chart').offsetWidth;
     MG.data_graphic({
         title: "",
         description: "This graphic shows a time-series average scoot charge.",
         data: chargeData,
         height: 300,
-        width: containerWidth,
         target: '#charge-chart',
         x_accessor: 'date',
         y_accessor: 'value',
-        show_tooltips: false
+        show_tooltips: false,
+        decimals: 0,
+        format: 'percentage',
+        full_width: true
     });
 }
 
 function drawScootilizationChart() {
     var scootilizationData = buildScootilizationChartData(timeSeriesData);
-    var containerWidth = document.getElementById('scootilization-chart').offsetWidth;
     MG.data_graphic({
         title: "",
         description: "This graphic shows a time-series of percentage of scoots in use.",
         data: scootilizationData,
         height: 300,
-        width: containerWidth,
         target: '#scootilization-chart',
         x_accessor: 'date',
         y_accessor: 'value',
-        show_tooltips: false
+        show_tooltips: false,
+        decimals: 0,
+        format: 'percentage',
+        xax_count: 4,
+        full_width: true
     });
 }
 
@@ -191,7 +194,7 @@ function buildChargeChartData(timeSeriesData) {
     var chargeData = [];
     timeSeriesData.forEach(function(datum) {
         var date = new Date(datum.timestamp * 1000);
-        var datumObject = {date: date, value: datum.average_charge_percentage};
+        var datumObject = {date: date, value: datum.average_charge_percentage / 100};
         chargeData.push(datumObject);
     });
     return chargeData;
@@ -201,7 +204,7 @@ function buildScootilizationChartData(timeSeriesData) {
     var scootilizationData = [];
     timeSeriesData.forEach(function(datum) {
         var date = new Date(datum.timestamp * 1000);
-        var datumObject = {date: date, value: datum.scootilization_percentage};
+        var datumObject = {date: date, value: datum.scootilization_percentage / 100};
 
         scootilizationData.push(datumObject);
     });
