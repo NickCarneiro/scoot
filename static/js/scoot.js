@@ -10,10 +10,10 @@ var timeSeriesData;
 
 function initMap() {
     console.log('initializing map');
-    map = new google.maps.Map(mapElem, {
-        center: {lat: 37.765266, lng: -122.443355},
-        zoom: 14
-    });
+    //map = new google.maps.Map(mapElem, {
+    //    center: {lat: 37.765266, lng: -122.443355},
+    //    zoom: 14
+    //});
     getScooters(timeIndex)
 }
 
@@ -143,16 +143,30 @@ function updateScooters(serverScooters) {
 
 
 google.charts.load('current', {'packages':['line']});
-google.charts.setOnLoadCallback(drawChargeChart);
+google.charts.setOnLoadCallback(drawCharts);
+
+function drawCharts() {
+    drawChargeChart();
+    drawScootilizationChart();
+}
 
 function drawChargeChart() {
     var chargeData = buildChargeChartData(timeSeriesData);
     var data = google.visualization.arrayToDataTable(chargeData);
 
     var options = {
+        axes: {
+            y: {
+                all: {
+                    range: {
+                        min: 0
+                    }
+                }
+            }
+        },
         title: 'Average Charge',
-        curveType: 'function',
-        legend: { position: 'bottom' }
+        legend: { position: 'none' }
+
     };
 
     var chart = new google.charts.Line(document.getElementById('charge-chart'));
@@ -160,11 +174,36 @@ function drawChargeChart() {
     chart.draw(data, options);
 }
 
+function drawScootilizationChart() {
+    var scootilizationData = buildScootilizationChartData(timeSeriesData);
+    var data = google.visualization.arrayToDataTable(scootilizationData);
+
+    var options = {
+        title: 'Average Charge',
+        curveType: 'function',
+        legend: { position: 'none' }
+    };
+
+    var chart = new google.charts.Line(document.getElementById('scootilization-chart'));
+
+    chart.draw(data, options);
+}
+
 function buildChargeChartData(timeSeriesData) {
-    var chargeData = [['Date', 'Charge Percentage']];
+    var chargeData = [['Time', 'Charge Percentage']];
     timeSeriesData.forEach(function(datum) {
-        var date = new Date(datum.timestamp);
+        var date = new Date(datum.timestamp * 1000);
         var datumArray = [date, datum.average_charge_percentage];
+        chargeData.push(datumArray);
+    });
+    return chargeData;
+}
+
+function buildScootilizationChartData(timeSeriesData) {
+    var chargeData = [['Time', 'Scootilization']];
+    timeSeriesData.forEach(function(datum) {
+        var date = new Date(datum.timestamp * 1000);
+        var datumArray = [date, datum.scootilization_percentage];
         chargeData.push(datumArray);
     });
     return chargeData;
