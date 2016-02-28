@@ -29,6 +29,9 @@ function getScooters(timeIndex) {
             var response = JSON.parse(resp);
             timeSeriesData = response;
             renderSnapshot(timeIndex);
+            if (window['google']) {
+                drawCharts();
+            }
 
         } else {
             // We reached our target server, but it returned an error
@@ -142,36 +145,30 @@ function updateScooters(serverScooters) {
 }
 
 
-google.charts.load('current', {'packages':['line']});
-google.charts.setOnLoadCallback(drawCharts);
+
 
 function drawCharts() {
+    if (!timeSeriesData) {
+        return;
+    }
     drawChargeChart();
-    drawScootilizationChart();
+    //drawScootilizationChart();
 }
 
 function drawChargeChart() {
     var chargeData = buildChargeChartData(timeSeriesData);
-    var data = google.visualization.arrayToDataTable(chargeData);
 
-    var options = {
-        axes: {
-            y: {
-                all: {
-                    range: {
-                        min: 0
-                    }
-                }
-            }
-        },
-        title: 'Average Charge',
-        legend: { position: 'none' }
-
-    };
-
-    var chart = new google.charts.Line(document.getElementById('charge-chart'));
-
-    chart.draw(data, options);
+    MG.data_graphic({
+        title: "Average Charge",
+        description: "This graphic shows a time-series average scoot charge.",
+        data: chargeData,
+        width: 600,
+        height: 250,
+        target: '#charge-chart',
+        x_accessor: 'date',
+        y_accessor: 'value',
+        show_tooltips: false
+    });
 }
 
 function drawScootilizationChart() {
@@ -190,11 +187,11 @@ function drawScootilizationChart() {
 }
 
 function buildChargeChartData(timeSeriesData) {
-    var chargeData = [['Time', 'Charge Percentage']];
+    var chargeData = [];
     timeSeriesData.forEach(function(datum) {
         var date = new Date(datum.timestamp * 1000);
-        var datumArray = [date, datum.average_charge_percentage];
-        chargeData.push(datumArray);
+        var datumObject = {date: date, value: datum.average_charge_percentage};
+        chargeData.push(datumObject);
     });
     return chargeData;
 }
