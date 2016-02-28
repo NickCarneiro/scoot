@@ -142,7 +142,7 @@ function updateScooters(serverScooters) {
 }
 
 
-google.charts.load('current', {'packages':['corechart']});
+google.charts.load('current', {'packages':['line']});
 google.charts.setOnLoadCallback(drawChargeChart);
 
 function drawChargeChart() {
@@ -155,15 +155,16 @@ function drawChargeChart() {
         legend: { position: 'bottom' }
     };
 
-    var chart = new google.visualization.LineChart(document.getElementById('charge-chart'));
+    var chart = new google.charts.Line(document.getElementById('charge-chart'));
 
     chart.draw(data, options);
 }
 
 function buildChargeChartData(timeSeriesData) {
-    var chargeData = [];
+    var chargeData = [['Date', 'Charge Percentage']];
     timeSeriesData.forEach(function(datum) {
-        var datumArray = [datum.timestamp, datum.average_charge_percentage];
+        var date = new Date(datum.timestamp);
+        var datumArray = [date, datum.average_charge_percentage];
         chargeData.push(datumArray);
     });
     return chargeData;
