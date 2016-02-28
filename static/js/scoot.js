@@ -1,5 +1,5 @@
 var mapElem = document.getElementById('map');
-var windowHeight = window.innerHeight - 60;
+var windowHeight = 400;
 mapElem.style.height = windowHeight + 'px';
 var map;
 var timeIndex = 0;
@@ -10,10 +10,10 @@ var timeSeriesData;
 
 function initMap() {
     console.log('initializing map');
-    //map = new google.maps.Map(mapElem, {
-    //    center: {lat: 37.765266, lng: -122.443355},
-    //    zoom: 14
-    //});
+    map = new google.maps.Map(mapElem, {
+        center: {lat: 37.765266, lng: -122.443355},
+        zoom: 14
+    });
     getScooters(timeIndex)
 }
 
@@ -152,18 +152,18 @@ function drawCharts() {
         return;
     }
     drawChargeChart();
-    //drawScootilizationChart();
+    drawScootilizationChart();
 }
 
 function drawChargeChart() {
     var chargeData = buildChargeChartData(timeSeriesData);
-
+    var containerWidth = document.getElementById('charge-chart').offsetWidth;
     MG.data_graphic({
-        title: "Average Charge",
+        title: "",
         description: "This graphic shows a time-series average scoot charge.",
         data: chargeData,
-        width: 600,
-        height: 250,
+        height: 300,
+        width: containerWidth,
         target: '#charge-chart',
         x_accessor: 'date',
         y_accessor: 'value',
@@ -173,17 +173,18 @@ function drawChargeChart() {
 
 function drawScootilizationChart() {
     var scootilizationData = buildScootilizationChartData(timeSeriesData);
-    var data = google.visualization.arrayToDataTable(scootilizationData);
-
-    var options = {
-        title: 'Average Charge',
-        curveType: 'function',
-        legend: { position: 'none' }
-    };
-
-    var chart = new google.charts.Line(document.getElementById('scootilization-chart'));
-
-    chart.draw(data, options);
+    var containerWidth = document.getElementById('scootilization-chart').offsetWidth;
+    MG.data_graphic({
+        title: "",
+        description: "This graphic shows a time-series of percentage of scoots in use.",
+        data: scootilizationData,
+        height: 300,
+        width: containerWidth,
+        target: '#scootilization-chart',
+        x_accessor: 'date',
+        y_accessor: 'value',
+        show_tooltips: false
+    });
 }
 
 function buildChargeChartData(timeSeriesData) {
@@ -197,11 +198,12 @@ function buildChargeChartData(timeSeriesData) {
 }
 
 function buildScootilizationChartData(timeSeriesData) {
-    var chargeData = [['Time', 'Scootilization']];
+    var scootilizationData = [];
     timeSeriesData.forEach(function(datum) {
         var date = new Date(datum.timestamp * 1000);
-        var datumArray = [date, datum.scootilization_percentage];
-        chargeData.push(datumArray);
+        var datumObject = {date: date, value: datum.scootilization_percentage};
+
+        scootilizationData.push(datumObject);
     });
-    return chargeData;
+    return scootilizationData;
 }
