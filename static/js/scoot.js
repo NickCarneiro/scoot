@@ -142,6 +142,29 @@ function updateScooters(serverScooters) {
 }
 
 
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawChargeChart);
 
+function drawChargeChart() {
+    var chargeData = buildChargeChartData(timeSeriesData);
+    var data = google.visualization.arrayToDataTable(chargeData);
 
+    var options = {
+        title: 'Average Charge',
+        curveType: 'function',
+        legend: { position: 'bottom' }
+    };
 
+    var chart = new google.visualization.LineChart(document.getElementById('charge-chart'));
+
+    chart.draw(data, options);
+}
+
+function buildChargeChartData(timeSeriesData) {
+    var chargeData = [];
+    timeSeriesData.forEach(function(datum) {
+        var datumArray = [datum.timestamp, datum.average_charge_percentage];
+        chargeData.push(datumArray);
+    });
+    return chargeData;
+}
